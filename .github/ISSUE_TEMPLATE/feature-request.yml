@@ -1,6 +1,6 @@
 name: ✨ Feature Request
 description: This form is to request a new feature in creedengo-javascript.
-labels: ["🚀 enhancement"]
+type: feature
 body:
   - type: textarea
     id: solution
