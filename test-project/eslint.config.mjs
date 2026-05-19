@@ -16,4 +16,16 @@ export default defineConfig(
       },
     },
   },
+  {
+    files: ["**/*.vue"],
+    languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        ecmaVersion: 2021,
+        sourceType: "module",
+        parser: tseslint.parser, // use "espree" if not using TS
+        extraFileExtensions: [".vue"],
+      },
+    },
+  },
 );

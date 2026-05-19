@@ -42,6 +42,17 @@ const ruleTester = new RuleTester({
   },
 });
 
+const vueRuleTester = new RuleTester({
+  languageOptions: {
+    parser: require("vue-eslint-parser"),
+    parserOptions: {
+      ecmaVersion: 2021,
+      sourceType: "module",
+      parser: require("@typescript-eslint/parser"), // or "espree"
+    },
+  },
+});
+
 const noAutoplayError = {
   messageId: "NoAutoplay",
 };
@@ -92,3 +103,30 @@ describe('avoid-autoplay', () => {
   });
 });
 
+
+const vueTests = {
+  valid: [
+    "<template><video preload=\"none\"></video></template>",
+    "<template><audio preload=\"none\"></audio></template>",
+  ],
+  invalid: [
+    {
+      code: "<template><video autoplay></video></template>",
+      errors: [BothError],
+    },
+    {
+      code: "<template><audio autoplay></audio></template>",
+      errors: [BothError],
+    },
+    {
+      code: "<template><video preload=\"auto\"></video></template>",
+      errors: [enforcePreloadNoneError],
+    },
+  ],
+};
+
+describe("avoid-autoplay (vue)", () => {
+  it("autoplay-audio-video-vue-template", () => {
+    vueRuleTester.run("avoid-autoplay", rule, vueTests);
+  });
+});
