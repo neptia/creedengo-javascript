@@ -32,8 +32,35 @@ module.exports = {
     },
     schema: [],
   },
-  create(context) {
+    create(context) {
     const forbiddenProperties = ["transition", "animation"];
+
+    const parserServices =
+      context.parserServices || context.sourceCode?.parserServices;
+
+    const vueTemplateVisitor = parserServices?.defineTemplateBodyVisitor
+      ? parserServices.defineTemplateBodyVisitor({
+          VElement(node) {
+            const styleAttr = node.startTag.attributes.find(
+              (attr) => attr.type === "VAttribute" && attr.key?.name === "style",
+            );
+            const styleValue = styleAttr?.value?.value;
+            if (!styleValue) return;
+
+            const matched = forbiddenProperties.find((prop) =>
+              new RegExp(`(^|;)\\s*${prop}\\s*:`, "i").test(styleValue),
+            );
+            if (!matched) return;
+
+            context.report({
+              node: styleAttr,
+              messageId: "AvoidCSSAnimations",
+              data: { attribute: matched },
+            });
+          },
+        })
+      : {};
+
     return {
       JSXOpeningElement(node) {
         const styleAttribute = node.attributes.find(
@@ -41,7 +68,6 @@ module.exports = {
         );
 
         if (styleAttribute?.value.expression?.properties) {
-          // To prevent (for example) <div style={{ animate: 'width 2s' }}>
           const property = styleAttribute.value.expression.properties.find(
             (prop) =>
               prop.key != null &&
@@ -60,6 +86,7 @@ module.exports = {
           }
         }
       },
+      ...vueTemplateVisitor,
     };
   },
 };

@@ -24,6 +24,13 @@ Limiting the usage of CSS animations helps in creating a more energy-efficient a
 <div style={{ border: "1px solid black" }} /> // Compliant
 ```
 
+<template>
+  <div style="border: 1px solid black; transition: border 2s ease;"></div> <!-- Non-compliant -->
+  <div style="border: 1px solid black;"></div> <!-- Compliant -->
+</template>
+
+Vue support only checks static style attributes; :style bindings are not validated.
+
 It's important to note that while limiting animations is generally advisable for certain scenarios, there are cases
 where animations contribute positively to the user experience and overall design.
 In this case they should be limited to the CSS properties `opacity` and `transform` with it's associated

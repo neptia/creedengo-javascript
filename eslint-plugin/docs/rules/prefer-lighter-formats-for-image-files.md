@@ -72,6 +72,13 @@ is supported, the image.webp image will be downloaded; otherwise, image.jpg imag
 </picture>
 ```
 
+<template>
+  <img src="./assets/cat.jpg" alt="Unoptimized image of a cat" /> <!-- Non-compliant -->
+  <img src="./assets/cat.webp" alt="Optimized image of a cat" /> <!-- Compliant -->
+</template>
+
+Vue support requires vue-eslint-parser; dynamic bindings like :src are not validated by this rule.
+
 Also remember to consider browser compatibility.
 Older browsers may not recognize .webp/.avif images and fail to display them.
 To address this issue, you can supply multiple formats for the same image.

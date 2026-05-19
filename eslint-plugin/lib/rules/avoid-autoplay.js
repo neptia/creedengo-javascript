@@ -35,7 +35,7 @@ module.exports = {
     },
     schema: [],
   },
-    create(context) {
+  create(context) {
     const reportAutoplay = (autoplayAttr, preloadAttr, preloadValue, fallback) => {
       if (autoplayAttr && preloadValue !== "none") {
         context.report({
@@ -60,13 +60,16 @@ module.exports = {
       }
     };
 
-    const parserServices = context.parserServices || context.sourceCode?.parserServices;
+    const parserServices =
+      context.parserServices || context.sourceCode?.parserServices;
 
     const vueTemplateVisitor = parserServices?.defineTemplateBodyVisitor
       ? parserServices.defineTemplateBodyVisitor({
           VElement(node) {
             const rawName =
-              typeof node.name === "string" ? node.name : node.name?.name || node.rawName;
+              typeof node.name === "string"
+                ? node.name
+                : node.name?.name || node.rawName;
             const name = rawName?.toLowerCase();
             if (name !== "video" && name !== "audio") return;
 

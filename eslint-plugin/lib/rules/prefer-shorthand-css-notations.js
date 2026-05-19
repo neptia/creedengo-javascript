@@ -52,7 +52,7 @@ module.exports = {
       },
     ],
   },
-  create: function (context) {
+    create: function (context) {
     const shorthandProperties = {
       animation: ["animationName", "animationDuration"],
       background: [
@@ -87,6 +87,52 @@ module.exports = {
 
     const disabledProperties = context.options?.[0]?.disableProperties ?? [];
 
+    const parserServices =
+      context.parserServices || context.sourceCode?.parserServices;
+
+    const toCamelCase = (value) =>
+      value.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+
+    const parseCssProperties = (styleValue) =>
+      styleValue
+        .split(";")
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .map((part) => part.split(":")[0].trim())
+        .filter(Boolean)
+        .map(toCamelCase);
+
+    const vueTemplateVisitor = parserServices?.defineTemplateBodyVisitor
+      ? parserServices.defineTemplateBodyVisitor({
+          VElement(node) {
+            const styleAttr = node.startTag.attributes.find(
+              (attr) => attr.type === "VAttribute" && attr.key?.name === "style",
+            );
+            const styleValue = styleAttr?.value?.value;
+            if (!styleValue) return;
+
+            const nodePropertyNames = parseCssProperties(styleValue);
+
+            for (const [shorthandProp, matchProperties] of Object.entries(
+              shorthandProperties,
+            )) {
+              if (
+                !disabledProperties.includes(shorthandProp) &&
+                matchProperties.every((prop) =>
+                  nodePropertyNames.includes(prop),
+                )
+              ) {
+                return context.report({
+                  node: styleAttr,
+                  messageId: "PreferShorthandCSSNotation",
+                  data: { property: shorthandProp },
+                });
+              }
+            }
+          },
+        })
+      : {};
+
     return {
       JSXOpeningElement(node) {
         const styleAttribute = node.attributes.find(
@@ -113,6 +159,7 @@ module.exports = {
           }
         }
       },
+      ...vueTemplateVisitor,
     };
   },
 };

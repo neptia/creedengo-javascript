@@ -42,6 +42,17 @@ const ruleTester = new RuleTester({
   },
 });
 
+const vueRuleTester = new RuleTester({
+  languageOptions: {
+    parser: require("vue-eslint-parser"),
+    parserOptions: {
+      ecmaVersion: 2021,
+      sourceType: "module",
+      parser: require("@typescript-eslint/parser"),
+    },
+  },
+});
+
 const tests = {
   valid: [
     `
@@ -91,5 +102,28 @@ const tests = {
 describe("avoid-css-animations", () => {
   it("avoid-css-animations", () => {
     ruleTester.run("avoid-css-animations", rule, tests);
+  });
+});
+
+const vueTests = {
+  valid: [
+    "<template><div style='border: 2px solid red'></div></template>",
+    "<template><div :style=\"{ transition: 'width 2s' }\"></div></template>",
+  ],
+  invalid: [
+    {
+      code: "<template><div style='transition: width 2s'></div></template>",
+      errors: [{ messageId: "AvoidCSSAnimations", data: { attribute: "transition" } }],
+    },
+    {
+      code: "<template><div style='animation: spin 2s linear'></div></template>",
+      errors: [{ messageId: "AvoidCSSAnimations", data: { attribute: "animation" } }],
+    },
+  ],
+};
+
+describe("avoid-css-animations (vue)", () => {
+  it("avoid-css-animations-vue", () => {
+    vueRuleTester.run("avoid-css-animations", rule, vueTests);
   });
 });

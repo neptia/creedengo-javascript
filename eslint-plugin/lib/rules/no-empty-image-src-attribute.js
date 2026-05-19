@@ -34,6 +34,34 @@ module.exports = {
     schema: [],
   },
   create(context) {
+    const parserServices =
+      context.parserServices || context.sourceCode?.parserServices;
+
+    const vueTemplateVisitor = parserServices?.defineTemplateBodyVisitor
+      ? parserServices.defineTemplateBodyVisitor({
+          VElement(node) {
+            const rawName =
+              typeof node.name === "string"
+                ? node.name
+                : node.name?.name || node.rawName;
+            const name = rawName?.toLowerCase();
+            if (name !== "img") return;
+
+            const srcAttr = node.startTag.attributes.find(
+              (attr) => attr.type === "VAttribute" && attr.key?.name === "src",
+            );
+            const srcValue = srcAttr?.value?.value;
+
+            if (srcValue === "" || !srcAttr) {
+              context.report({
+                node: srcAttr || node,
+                messageId: "SpecifySrcAttribute",
+              });
+            }
+          },
+        })
+      : {};
+
     return {
       JSXOpeningElement(node) {
         if (node.name.name === "img") {
@@ -41,13 +69,11 @@ module.exports = {
             (attr) => attr.name.name === "src",
           );
           if (srcValue?.value?.value === "") {
-            //to prevent <img src='' alt='Empty image'/>
             context.report({
               node: srcValue,
               messageId: "SpecifySrcAttribute",
             });
           } else if (!srcValue) {
-            //to prevent <img />
             context.report({
               node,
               messageId: "SpecifySrcAttribute",
@@ -55,6 +81,7 @@ module.exports = {
           }
         }
       },
+      ...vueTemplateVisitor,
     };
   },
 };

@@ -48,7 +48,7 @@ const vueRuleTester = new RuleTester({
     parserOptions: {
       ecmaVersion: 2021,
       sourceType: "module",
-      parser: require("@typescript-eslint/parser"), // or "espree"
+      parser: require("@typescript-eslint/parser"),
     },
   },
 });
